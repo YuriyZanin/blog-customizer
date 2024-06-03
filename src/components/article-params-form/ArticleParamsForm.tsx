@@ -4,7 +4,7 @@ import { Button } from 'components/button';
 
 import styles from './ArticleParamsForm.module.scss';
 import clsx from 'clsx';
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import { Select } from '../select';
 import { RadioGroup } from '../radio-group';
 import {
@@ -18,35 +18,26 @@ import {
 	fontSizeOptions,
 } from 'src/constants/articleProps';
 import { Separator } from '../separator';
+import { useClose } from 'src/hooks/useClose';
 
 type ArticleParamsFormProps = {
 	callback: (state: ArticleStateType) => void;
 };
 
 export const ArticleParamsForm = ({ callback }: ArticleParamsFormProps) => {
-	const [isOpen, setOpen] = useState(false);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [state, setState] = useState<ArticleStateType>(defaultArticleState);
 	const formRef = useRef<HTMLFormElement | null>(null);
 
-	useEffect(() => {
-		// Код для запуска при монтировании
-		document.addEventListener('mousedown', handleOutsideClick);
-		return () => {
-			// Код для выполнения при размонтировании
-			document.removeEventListener('mousedown', handleOutsideClick);
-		};
-	}, []);
-
-	const handleOutsideClick = (e: any) => {
-		e.preventDefault();
-		if (!formRef?.current?.contains(e.target)) {
-			setOpen(false);
-		}
+	const handleClose = () => {
+		setIsMenuOpen(!isMenuOpen);
 	};
 
-	const handleArrowClick = () => {
-		setOpen(!isOpen);
-	};
+	useClose({
+		isOpen: isMenuOpen,
+		onClose: handleClose,
+		rootRef: formRef,
+	});
 
 	const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -61,9 +52,11 @@ export const ArticleParamsForm = ({ callback }: ArticleParamsFormProps) => {
 
 	return (
 		<>
-			<ArrowButton isOpen={isOpen} onClick={handleArrowClick} />
+			<ArrowButton isOpen={isMenuOpen} onClick={handleClose} />
 			<aside
-				className={clsx(styles.container, isOpen && styles.container_open)}>
+				className={clsx(styles.container, {
+					[styles.container_open]: isMenuOpen,
+				})}>
 				<form
 					ref={formRef}
 					className={styles.form}
